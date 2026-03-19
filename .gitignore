@@ -1,0 +1,42 @@
+# Binaries
+build/
+*.exe
+*.dll
+*.so
+*.dylib
+cfst
+cfst-*
+
+# Test and coverage
+*.out
+coverage.html
+coverage.out
+
+# Config
+configs/config.yaml
+config.yaml
+
+# Results
+result.csv
+result.json
+
+# Logs
+*.log
+
+# Go
+vendor/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local

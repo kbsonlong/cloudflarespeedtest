@@ -1,0 +1,90 @@
+# CloudflareSpeedTest 配置文件示例
+
+# 扫描配置
+scan:
+  # IP 源 (文件路径、CIDR 或 URL)
+  sources:
+    - ./ip.txt
+    # - https://example.com/cloudflare-ips.txt
+    # - 173.245.48.0/20
+
+  # 延迟测试配置
+  ping:
+    mode: tcp              # tcp 或 http
+    port: 443              # 测速端口
+    times: 4               # 每个 IP 测试次数
+    routines: 200          # 并发数 (1-1000)
+    timeout: 1s            # 超时时间
+
+    # HTTPing 特定配置 (mode: http 时有效)
+    http:
+      url: https://cf.xiu2.xyz/url
+      status_codes: [200, 301, 302]
+      expected_colo: []    # 空 = 所有地区，示例: ["HKG", "NRT", "LAX"]
+
+  # 速度测试配置
+  speed:
+    enabled: true          # 是否启用下载测速
+    count: 10              # 测速数量
+    timeout: 10s           # 单个 IP 测速超时
+    min_speed: 0           # 最小速度 (MB/s)，0 = 不限制
+
+  # 过滤条件
+  filter:
+    max_delay: 200ms       # 最大延迟
+    min_delay: 40ms        # 最小延迟
+    max_loss_rate: 0.2     # 最大丢包率 (0-1)
+
+# Cloudflare DNS 配置
+dns:
+  # API 凭证 (建议使用环境变量)
+  api_token: ${CF_API_TOKEN}
+  account_id: ${CF_ACCOUNT_ID}
+  zone_id: ${CF_ZONE_ID}
+
+  # DNS 记录配置
+  records:
+    - zone_id: ${CF_ZONE_ID}
+      record_id: ${CF_RECORD_ID}
+      name: example.com
+      type: A
+      proxied: true
+
+    # - zone_id: ${CF_ZONE_ID}
+    #   record_id: ${CF_RECORD_ID_2}
+    #   name: www.example.com
+    #   type: CNAME
+    #   proxied: false
+
+  # 更新策略
+  update_policy:
+    mode: best            # best: 最优, filtered: 过滤后最优, top: 前 N 个
+    min_score: 60         # 最小评分 (0-100)
+    max_records: 3        # 最多更新记录数
+
+# 代理配置 (可选)
+# proxy:
+#   enabled: false
+#   listen: ":8080"
+#   mode: sni            # sni 或 forward
+
+# 输出配置
+output:
+  console:
+    enabled: true
+    top: 10               # 显示前 N 个结果
+
+  csv:
+    enabled: true
+    path: "./result.csv"
+
+  json:
+    enabled: false
+    path: "./result.json"
+    pretty: true
+
+# 日志配置
+log:
+  level: info            # debug, info, warn, error
+  format: text           # json 或 text
+  output: stdout         # stdout, stderr 或文件路径

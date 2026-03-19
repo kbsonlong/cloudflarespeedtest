@@ -1,0 +1,54 @@
+name: Update Cloudflare IP Ranges
+
+on:
+  schedule:
+    # 每天 UTC 时间 00:00 执行 (北京时间 08:00)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 允许手动触发
+
+permissions:
+  contents: write
+
+jobs:
+  update-ip-ranges:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache: true
+
+      - name: Update Cloudflare IP ranges
+        run: |
+          chmod +x scripts/update-ip.sh
+          ./scripts/update-ip.sh
+
+      - name: Check for changes
+        id: verify-changes
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+            echo "检测到 IP 变化，准备提交..."
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+            echo "没有检测到 IP 变化"
+          fi
+
+      - name: Configure Git
+        if: steps.verify-changes.outputs.changes == 'true'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Commit and push changes
+        if: steps.verify-changes.outputs.changes == 'true'
+        run: |
+          git add ip.txt ipv6.txt
+          git commit -m "chore: update Cloudflare IP ranges [skip ci]"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
