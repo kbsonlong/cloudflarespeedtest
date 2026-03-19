@@ -24,8 +24,8 @@ jobs:
 
       - name: Update Cloudflare IP ranges
         run: |
-          chmod +x scripts/update-ip.sh
-          ./scripts/update-ip.sh
+          cd scripts
+          go run update-ip.go
 
       - name: Check for changes
         id: verify-changes
